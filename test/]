@@ -1,0 +1,86 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<meta name="viewport" content="width=device-width">
+<link rel="canonical" href="http://backbonejs.org" />
+<link rel="icon" href="docs/images/favicon.ico" />
+<title>Backbone</title>
+</head>
+<body>
+<ul id="test">
+</ul>
+<script type="text/template" id="J_Template">
+<span><%= title%>: <%= name %> </span> 
+<button class="delete">delete</button>
+<button class="add">add</button>
+</script>
+<script src="lib/jquery.js"></script>
+<script src="lib/underscore.js"></script>
+<script src="lib/backbone.js"></script>
+<script type="text/javascript">
+//Model
+var RowModel = Backbone.Model.extend({
+    defaults : {
+        title : 'name',
+        name : 'hifoxwei'
+    },
+    validate : function(attrs, options) {
+        if(attrs.name === 'hifoxwei') {
+            attrs.name = 'haha hifoxwei';
+        }
+    }
+})
+var rowModel = new RowModel();
+
+//Collection
+var Rows = Backbone.Collection.extend({
+        model : RowModel 
+    })
+var rows = new Rows([{name : 'hifoxwei'}, {name:'znwlove'},{name:'weiming'}]);
+        
+//View
+var RowView = Backbone.View.extend({
+    root : $('#test'),
+    tagName: "li",
+    className: "test",
+    id : 'row-1',
+    model : rows,//bind to model
+    events: {
+        "click .add":   "add",
+        "click .delete": "delete"
+    },
+    template : _.template(this.$('#J_Template').html()),
+    initialize: function() {
+        this.render();
+        this.listenTo(this.model, "change", this.render);
+        this.listenTo(this.model, "invalid", function(model, error) {
+              alert(model.get("title") + " " + error);
+              });
+    },
+    append : function(){
+        var snip = '', self = this;
+        _.each(this.model.toJSON(), function(el) {
+              snip += self.$el.html(self.template(el))[0].outerHTML;
+        })
+        return snip;
+    },
+    render: function() {
+        this.root.html(this.append());
+        return this;
+    },
+    add : function(){
+        //Remove an attribute by deleting it from the internal attributes hash
+        this.model.set({name : 'weiming!'})
+    },
+    delete : function(){
+        //this.model.clear();//Removes all attributes from the model
+        this.model.unset('name')
+    }
+});
+var row = new RowView;
+</script>
+</body>
+</html>
